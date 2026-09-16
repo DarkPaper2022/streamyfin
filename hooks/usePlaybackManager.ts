@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { useDownload } from "@/providers/DownloadProvider";
 import { DownloadedItem } from "@/providers/Downloads/types";
 import { apiAtom, userAtom } from "@/providers/JellyfinProvider";
+import { effectiveSettingsAtom } from "@/utils/atoms/settings";
 import { shuffleQueueAtom } from "@/utils/atoms/shuffleQueue";
 import { useNetworkStatus } from "./useNetworkStatus";
 
@@ -70,6 +71,7 @@ export const usePlaybackManager = ({
   const api = useAtomValue(apiAtom);
   const user = useAtomValue(userAtom);
   const shuffleQueue = useAtomValue(shuffleQueueAtom);
+  const settings = useAtomValue(effectiveSettingsAtom);
   const { isConnected } = useNetworkStatus();
   const queryClient = useQueryClient();
   const { getDownloadedItemById, updateDownloadedItem, getDownloadedItems } =
@@ -94,10 +96,12 @@ export const usePlaybackManager = ({
         return null;
       }
 
+      // One previous + the current item, plus room for the video look-ahead
+      // count so `nextItems` can supply every episode the prefetch wants.
       const res = await getTvShowsApi(api).getEpisodes({
         seriesId: item.SeriesId,
         adjacentTo: item.Id,
-        limit: 3,
+        limit: 3 + settings.videoLookaheadCount,
         fields: ["MediaSources", "MediaStreams", "ParentId"],
       });
 
@@ -167,6 +171,24 @@ export const usePlaybackManager = ({
     currentIndex,
     item,
   ]);
+
+  /**
+   * All upcoming items in playback order (shuffle queue or adjacent
+   * episodes), previous/current excluded. Consumed by the video look-ahead
+   * prefetch, which needs more than the single `nextItem`.
+   */
+  const nextItems = useMemo(() => {
+    if (shuffleActive) {
+      if (shuffleIndex < 0) return [];
+      return (shuffleQueue?.items.slice(shuffleIndex + 1) ?? []).filter(
+        (episode) => episode.LocationType !== "Virtual",
+      );
+    }
+    if (!adjacentItems || currentIndex < 0) return [];
+    return adjacentItems
+      .slice(currentIndex + 1)
+      .filter((episode) => episode.LocationType !== "Virtual");
+  }, [shuffleActive, shuffleQueue, shuffleIndex, adjacentItems, currentIndex]);
 
   /** The next item in the series */
   const nextItem = useMemo(() => {
@@ -353,5 +375,6 @@ export const usePlaybackManager = ({
     markItemUnplayed,
     previousItem,
     nextItem,
+    nextItems,
   };
 };

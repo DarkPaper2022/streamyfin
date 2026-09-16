@@ -38,6 +38,7 @@ import {
   useRemoteSubtitles,
 } from "@/hooks/useRemoteSubtitles";
 import { useInvalidatePlaybackProgressCache } from "@/hooks/useRevalidatePlaybackProgressCache";
+import { useVideoLookahead } from "@/hooks/useVideoLookahead";
 import {
   addNativePlayerListener,
   dismissNativePlayer,
@@ -378,6 +379,24 @@ const NativePlayerProviderInner: React.FC<{
     reportProgressRef.current = playbackManager.reportPlaybackProgress;
     nextItemRef.current = playbackManager.nextItem;
     previousItemRef.current = playbackManager.previousItem;
+  });
+
+  // Cross-episode look-ahead cache: once the session commits, activeItem and
+  // the adjacent-items query drive the prefetch of the next episodes' direct
+  // streams. Reads the committed session's live track selection from the ref
+  // (same pattern as the handlers below); a mid-session track change is
+  // re-resolved with the next session, and a cache miss only means the next
+  // episode plays from the network as before. Downloaded (offline) items have
+  // nothing to prefetch.
+  useVideoLookahead({
+    item: activeItem,
+    nextItems: sessionRef.current?.offline ? [] : playbackManager.nextItems,
+    settings,
+    api,
+    userId: user?.Id,
+    audioStreamIndex: sessionRef.current?.currentAudioIndex,
+    subtitleStreamIndex: sessionRef.current?.currentSubtitleIndex,
+    maxStreamingBitrate: sessionRef.current?.bitrateValue,
   });
 
   const apiRef = useRef(api);

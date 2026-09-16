@@ -50,6 +50,7 @@ import { useOrientation } from "@/hooks/useOrientation";
 import { usePlaybackManager } from "@/hooks/usePlaybackManager";
 import usePlaybackSpeed from "@/hooks/usePlaybackSpeed";
 import { useInvalidatePlaybackProgressCache } from "@/hooks/useRevalidatePlaybackProgressCache";
+import { useVideoLookahead } from "@/hooks/useVideoLookahead";
 import { useWebSocket } from "@/hooks/useWebsockets";
 import {
   type MpvOnErrorEventPayload,
@@ -268,6 +269,20 @@ export default function DirectPlayerPage() {
     }
     return undefined;
   }, [audioIndexFromUrl, offline, downloadedItem?.userData?.audioStreamIndex]);
+
+  // Cross-episode look-ahead cache: while this session plays, silently
+  // prefetch the next episodes' direct streams into the soft VideoCache.
+  // Offline (downloaded) items have nothing to prefetch.
+  const { getStreamHit } = useVideoLookahead({
+    item,
+    nextItems: offline ? [] : playbackManager.nextItems,
+    settings,
+    api,
+    userId: user?.Id,
+    audioStreamIndex: audioIndex,
+    subtitleStreamIndex: subtitleIndex,
+    maxStreamingBitrate: bitrateValue,
+  });
 
   // Initialize TV audio/subtitle indices from URL params.
   // No undefined guard: when a new episode's URL omits audioIndex, reset to
@@ -562,6 +577,26 @@ export default function DirectPlayerPage() {
             return null;
           }
           result = { mediaSource, sessionId, url, requiredHttpHeaders };
+
+          // Video look-ahead cache hit: this exact rendition was prefetched
+          // while an earlier episode played. Serve the local file and drop
+          // the Jellyfin headers (nothing needs them for a file:// URL). The
+          // sessionId is kept — a deliberate deviation from the offline
+          // branch's "" — so the server session reports keep matching.
+          const resolvedMediaSourceId = mediaSource.Id;
+          if (settings.videoLookaheadEnabled && resolvedMediaSourceId) {
+            const hit = getStreamHit({
+              itemId: item.Id,
+              mediaSourceId: resolvedMediaSourceId,
+              container: mediaSource.Container ?? undefined,
+              maxBitrate: bitrateValue,
+              audioStreamIndex: audioIndex,
+              subtitleStreamIndex: subtitleIndex,
+            });
+            if (hit) {
+              result = { mediaSource, sessionId, url: hit.path };
+            }
+          }
         }
         setTracksReady(false);
         setStream(result);
@@ -983,8 +1018,10 @@ export default function DirectPlayerPage() {
       source.externalSubtitles = externalSubs;
     }
 
-    // Add headers for online streaming (not for local file:// URLs)
-    if (!offline) {
+    // Add headers for online streaming (not for local file:// URLs —
+    // including a look-ahead cache hit, which serves a cached direct stream)
+    const isLocalFile = stream.url.startsWith("file://");
+    if (!offline && !isLocalFile) {
       const headers: Record<string, string> = {};
       const isRemoteStream =
         mediaSource?.IsRemote && mediaSource?.Protocol === "Http";

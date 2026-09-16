@@ -8,6 +8,7 @@ import type { OrientationLock as OrientationLockType } from "expo-screen-orienta
 import type { TFunction } from "i18next";
 import { Platform } from "react-native";
 import { BITRATES } from "@/components/BitrateSelector";
+import { getVideoStreamHit } from "@/hooks/useVideoLookahead";
 import type {
   NativePlayerConfig,
   NativePlayerStrings,
@@ -461,6 +462,27 @@ export async function buildNativePlayerConfig(params: {
       mediaSource: res.mediaSource,
       requiredHttpHeaders: res.requiredHttpHeaders,
     };
+
+    // Video look-ahead cache hit: this exact rendition was prefetched while
+    // an earlier episode played. Same treatment as the JS route (direct
+    // player) — serve the local file, drop the Jellyfin headers. The
+    // sessionId is kept (deliberate deviation from the offline branch's "")
+    // so the server session reports keep matching.
+    const resolvedMediaSourceId = res.mediaSource.Id;
+    const hit =
+      settings.videoLookaheadEnabled && resolvedMediaSourceId
+        ? getVideoStreamHit({
+            itemId: item.Id,
+            mediaSourceId: resolvedMediaSourceId,
+            container: res.mediaSource.Container ?? undefined,
+            maxBitrate: bitrateValue,
+            audioStreamIndex: audioIndex,
+            subtitleStreamIndex: subtitleIndex,
+          })
+        : null;
+    if (hit) {
+      stream = { ...stream, url: hit.path, requiredHttpHeaders: undefined };
+    }
   }
 
   const mediaSource = stream.mediaSource;
@@ -482,9 +504,11 @@ export async function buildNativePlayerConfig(params: {
     videoStream?.Rotation,
   );
 
-  // 4. Headers — online only, auth skipped for remote/external streams
+  // 4. Headers — online only, auth skipped for remote/external streams. A
+  // look-ahead cache hit serves a local file:// URL, which needs none.
   let headers: Record<string, string> | undefined;
-  if (!offline) {
+  const streamIsLocalFile = stream.url.startsWith("file://");
+  if (!offline && !streamIsLocalFile) {
     const built: Record<string, string> = {};
     const isRemoteStream =
       mediaSource.IsRemote && mediaSource.Protocol === "Http";
