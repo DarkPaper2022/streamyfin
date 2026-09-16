@@ -6,6 +6,7 @@ import { MediaToggles } from "@/components/settings/MediaToggles";
 import { MpvBufferSettings } from "@/components/settings/MpvBufferSettings";
 import { MpvVoSettings } from "@/components/settings/MpvVoSettings";
 import { PlaybackControlsSettings } from "@/components/settings/PlaybackControlsSettings";
+import { VideoCacheSettings } from "@/components/settings/VideoCacheSettings";
 import { VideoPlayerSelector } from "@/components/settings/VideoPlayerSelector";
 import { ChromecastSettings } from "../../../../../../components/settings/ChromecastSettings";
 
@@ -27,6 +28,7 @@ export default function PlaybackControlsPage() {
       >
         <View>
           <VideoPlayerSelector className='mb-4' />
+          <VideoCacheSettings />
           <MediaProvider>
             <MediaToggles className='mb-4' />
             <GestureControls className='mb-4' />

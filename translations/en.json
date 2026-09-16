@@ -419,6 +419,13 @@
         "lookahead_count": "Songs to pre-cache",
         "max_cache_size": "Max cache size"
       },
+      "video_cache": {
+        "caching_title": "Video cache",
+        "caching_description": "Store upcoming episodes ahead of time. The oldest ones are removed once the size limit is reached.",
+        "lookahead_enabled": "Enable look-ahead caching",
+        "lookahead_count": "Episodes to pre-cache",
+        "max_cache_size": "Max cache size"
+      },
       "plugins": {
         "plugins_title": "Plugins",
         "wikidata_awards": "Awards from Wikidata",

@@ -519,6 +519,10 @@ export type Settings = {
   audioLookaheadEnabled: boolean;
   audioLookaheadCount: number;
   audioMaxCacheSizeMB: number;
+  // Video look-ahead caching
+  videoLookaheadEnabled: boolean;
+  videoLookaheadCount: number;
+  videoMaxCacheSizeMB: number;
   // Music playback
   preferLocalAudio: boolean;
   // Audio transcoding mode
@@ -676,6 +680,10 @@ export const defaultValues: Settings = {
   audioLookaheadEnabled: true,
   audioLookaheadCount: 1,
   audioMaxCacheSizeMB: 500,
+  // Video look-ahead caching defaults
+  videoLookaheadEnabled: true,
+  videoLookaheadCount: 1,
+  videoMaxCacheSizeMB: 1024,
   // Music playback
   preferLocalAudio: true,
   // Audio transcoding mode

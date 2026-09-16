@@ -13,6 +13,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/common/Text";
 import { TVPasswordEntryModal } from "@/components/login/TVPasswordEntryModal";
 import { TVPINEntryModal } from "@/components/login/TVPINEntryModal";
+import {
+  VIDEO_CACHE_SIZE_OPTIONS,
+  VIDEO_LOOKAHEAD_COUNT_OPTIONS,
+} from "@/components/settings/VideoCacheSettings";
 import type { TVOptionItem } from "@/components/tv";
 import {
   TVCustomHeadersSection,
@@ -593,6 +597,28 @@ export default function SettingsTV() {
     [t, currentVideoPlayer],
   );
 
+  // Video look-ahead cache options (option lists shared with the mobile
+  // settings screen)
+  const videoLookaheadCountOptions: TVOptionItem<number>[] = useMemo(
+    () =>
+      VIDEO_LOOKAHEAD_COUNT_OPTIONS.map((option) => ({
+        label: option.label,
+        value: option.value,
+        selected: option.value === settings.videoLookaheadCount,
+      })),
+    [settings.videoLookaheadCount],
+  );
+
+  const videoCacheSizeOptions: TVOptionItem<number>[] = useMemo(
+    () =>
+      VIDEO_CACHE_SIZE_OPTIONS.map((option) => ({
+        label: option.label,
+        value: option.value,
+        selected: option.value === settings.videoMaxCacheSizeMB,
+      })),
+    [settings.videoMaxCacheSizeMB],
+  );
+
   // Typography scale options
   const typographyScaleOptions: TVOptionItem<TVTypographyScale>[] = useMemo(
     () => [
@@ -748,6 +774,16 @@ export default function SettingsTV() {
     const option = videoPlayerOptions.find((o) => o.selected);
     return option?.label || "MPV";
   }, [videoPlayerOptions]);
+
+  const videoLookaheadCountLabel =
+    VIDEO_LOOKAHEAD_COUNT_OPTIONS.find(
+      (option) => option.value === settings.videoLookaheadCount,
+    )?.label ?? `${settings.videoLookaheadCount} episodes`;
+
+  const videoCacheSizeLabel =
+    VIDEO_CACHE_SIZE_OPTIONS.find(
+      (option) => option.value === settings.videoMaxCacheSizeMB,
+    )?.label ?? `${settings.videoMaxCacheSizeMB} MB`;
 
   const languageLabel = useMemo(() => {
     if (!currentLanguage) return t("home.settings.languages.system");
@@ -1301,6 +1337,46 @@ export default function SettingsTV() {
               updateSettings({ mpvDemuxerMaxBackBytes: newValue });
             }}
             formatValue={(v) => `${v} MB`}
+          />
+
+          {/* Video Cache Section — cross-episode look-ahead */}
+          <TVSectionHeader
+            title={t("home.settings.video_cache.caching_title")}
+          />
+          <TVSettingsToggle
+            label={t("home.settings.video_cache.lookahead_enabled")}
+            value={settings.videoLookaheadEnabled}
+            disabledByAdmin={pluginSettings?.videoLookaheadEnabled?.locked}
+            onToggle={(value) =>
+              updateSettings({ videoLookaheadEnabled: value })
+            }
+          />
+          <TVSettingsOptionButton
+            label={t("home.settings.video_cache.lookahead_count")}
+            value={videoLookaheadCountLabel}
+            disabled={!settings.videoLookaheadEnabled}
+            disabledByAdmin={pluginSettings?.videoLookaheadCount?.locked}
+            onPress={() =>
+              showOptions({
+                title: t("home.settings.video_cache.lookahead_count"),
+                options: videoLookaheadCountOptions,
+                onSelect: (value) =>
+                  updateSettings({ videoLookaheadCount: value }),
+              })
+            }
+          />
+          <TVSettingsOptionButton
+            label={t("home.settings.video_cache.max_cache_size")}
+            value={videoCacheSizeLabel}
+            disabledByAdmin={pluginSettings?.videoMaxCacheSizeMB?.locked}
+            onPress={() =>
+              showOptions({
+                title: t("home.settings.video_cache.max_cache_size"),
+                options: videoCacheSizeOptions,
+                onSelect: (value) =>
+                  updateSettings({ videoMaxCacheSizeMB: value }),
+              })
+            }
           />
 
           {/* Segment Skip Section */}
