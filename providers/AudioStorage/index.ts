@@ -475,7 +475,10 @@ export async function downloadTrack(
   const extension = options.container?.toLowerCase() || "m4a";
   const filename = `${itemId}.${extension}`;
   const destinationPath =
-    `${targetDir.uri.replace(/\/$/, "")}/${filename}`.replace("file://", "");
+    `${targetDir.uri.replace(/\/$/, "")}/${filename}`.replace(
+      /^file:(\/\/)?/,
+      "",
+    );
 
   console.log(
     `[AudioStorage] Starting download: ${itemId} (permanent=${permanent})`,
