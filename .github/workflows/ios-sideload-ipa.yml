@@ -1,0 +1,123 @@
+name: 📦 iOS Sideload IPA (Unsigned)
+
+# Builds an **unsigned** iOS IPA (phone target, EXPO_TV=0) that can be re-signed
+# and installed via SideStore / AltStore / Sideloadly with a free Apple ID.
+# No Apple certificates, Apple ID, or provisioning profiles are used:
+#
+#   bun run ios:unsigned-build  →  build/Streamyfin.ipa  (Payload/Streamyfin.app)
+#
+# The original bundle identifier (com.fredrikburmester.streamyfin) and version
+# (app.json → 0.55.0) are preserved — nothing in the app is re-versioned here.
+#
+# Triggers:
+#   - Manual: Actions → "iOS Sideload IPA (Unsigned)" → Run workflow (any branch)
+#   - Push:   branches below (edit to track your main development branch)
+#
+# Note: the upstream `build-apps.yml` already carries an unsigned iOS job for
+# PR/develop checks. This workflow is the sideload-oriented entry point: it
+# additionally publishes a rolling GitHub Release (`ios-sideload`) whose tag is
+# reused on every build, so the download link stays current without ever
+# requiring App-Store-style signing.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop, feat/video-lookahead-cache]
+
+# Exposed to `expo prebuild` (app.config.ts → extra.build) so Settings can show
+# the branch + commit + Actions run the IPA was built from.
+env:
+  EXPO_PUBLIC_GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
+  EXPO_PUBLIC_GIT_COMMIT: ${{ github.sha }}
+  EXPO_PUBLIC_GIT_RUN_NUMBER: ${{ github.run_number }}
+
+jobs:
+  build-ios-phone-unsigned:
+    if: (!contains(github.event.head_commit.message, '[skip ci]'))
+    runs-on: macos-26
+    name: 🍎 Build unsigned iOS IPA (Phone)
+    permissions:
+      contents: write # upload artifact + rolling release
+      actions: write # upload build artifact
+
+    steps:
+      - parallel:
+          - name: 📥 Checkout code
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            with:
+              ref: ${{ github.event.pull_request.head.sha || github.sha }}
+              fetch-depth: 0
+              submodules: recursive
+              show-progress: false
+
+          - name: 🍞 Setup Bun
+            uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+            with:
+              # renovate: datasource=npm depName=bun
+              bun-version: "1.4.2"
+
+          - name: 🔧 Setup Xcode
+            uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+            with:
+              # renovate: datasource=custom.xcode depName=xcode versioning=loose
+              xcode-version: "26.6"
+
+      - name: 💾 Cache Bun dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ runner.arch }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-bun-
+
+      - name: 📦 Install dependencies and reload submodules
+        run: |
+          bun install --frozen-lockfile
+          bun run submodule-reload
+
+      - name: 🛠️ Ensure Metal toolchain (KSPlayer shaders)
+        # No-op when the `metal` tool already exists (bundled with Xcode 26.6);
+        # self-heals the "missing Metal Toolchain" failure otherwise.
+        run: bun run ios:install-metal-toolchain
+
+      - name: 🛠️ Generate project files
+        run: bun run prebuild
+
+      - name: 🚀 Build unsigned IPA
+        env:
+          EXPO_TV: 0
+        run: bun run ios:unsigned-build
+
+      - name: 📅 Set date tag
+        run: echo "DATE_TAG=$(date +%Y-%m-%d_%H-%M-%S)" >> $GITHUB_ENV
+
+      - name: 📤 Upload IPA artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: streamyfin-ios-unsigned-ipa-${{ env.DATE_TAG }}
+          path: build/*.ipa
+          retention-days: 30
+
+      - name: 📦 Publish rolling release (ios-sideload)
+        # One long-lived release pointing at the newest sideloadable IPA. The
+        # tag is reused (updated in place) so the download link never changes.
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ios-sideload
+          name: "Streamyfin iOS (unsigned, sideload) ${{ env.DATE_TAG }}"
+          body: |
+            Unsigned iOS IPA (phone, EXPO_TV=0) built by
+            [run ${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            - Branch: `${{ github.ref_name }}`
+            - Commit: `${{ github.sha }}`
+            - App version: 0.55.0 (`com.fredrikburmester.streamyfin`)
+
+            Install with SideStore / AltStore / Sideloadly using a free Apple ID
+            (re-signed locally on your device).
+          files: build/*.ipa
+          fail_on_unmatched_files: true
