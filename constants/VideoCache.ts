@@ -32,3 +32,17 @@ export const VIDEO_CACHE_MAX_CONCURRENT = 1;
  * default size budget while covering several episodes ahead.
  */
 export const VIDEO_CACHE_MAX_ENTRIES = 20;
+
+/**
+ * Minimum free disk space threshold (5 GB). When device free disk storage
+ * drops below this threshold, eviction will trim older cache entries until
+ * free disk space is safely above the threshold.
+ */
+export const VIDEO_CACHE_MIN_FREE_DISK_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
+
+/**
+ * Magic value for videoMaxCacheSizeMB meaning "Auto / Unlimited by size",
+ * where cache retention is guided purely by available disk space (retaining
+ * at least VIDEO_CACHE_MIN_FREE_DISK_BYTES) and entry count limits.
+ */
+export const VIDEO_CACHE_SIZE_UNLIMITED = 0;

@@ -24,6 +24,15 @@ import { buildVideoStreamKey } from "./streamKey";
 import type { VideoCacheEnqueueParams, VideoCacheIndex } from "./types";
 
 // --- Module-boundary stubs (native modules can't load under bun:test) ---
+mock.module("react-native-device-info", () => ({
+  default: {
+    getFreeDiskStorage: async () => 20 * 1024 * 1024 * 1024,
+    getTotalDiskCapacity: async () => 128 * 1024 * 1024 * 1024,
+  },
+  getFreeDiskStorage: async () => 20 * 1024 * 1024 * 1024,
+  getTotalDiskCapacity: async () => 128 * 1024 * 1024 * 1024,
+}));
+
 stubMmkv();
 mock.module("expo-file-system", () => ({ Paths, Directory, File }));
 

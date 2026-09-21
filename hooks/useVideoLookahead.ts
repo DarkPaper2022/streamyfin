@@ -22,7 +22,9 @@ import {
   enqueueStream,
   getForKey,
   reserveSpace,
+  setProtectedStreamKeys,
 } from "@/providers/VideoCache";
+
 import { buildVideoStreamKey } from "@/providers/VideoCache/streamKey";
 import type {
   VideoCacheEntry,
@@ -100,6 +102,49 @@ export const useVideoLookahead = (
     if (!enabled) return;
     void reserveSpace(maxCacheSizeMB);
   }, [enabled, maxCacheSizeMB]);
+
+  // Update protected stream keys: the current item and immediate lookahead
+  // targets should not be evicted by LRU while in active playback scope.
+  useEffect(() => {
+    if (!enabled) {
+      setProtectedStreamKeys([]);
+      return;
+    }
+    const protectedKeys: string[] = [];
+    if (item?.Id) {
+      protectedKeys.push(
+        buildVideoStreamKey({
+          itemId: item.Id,
+          mediaSourceId: item.Id,
+          audioStreamIndex,
+          subtitleStreamIndex,
+          maxBitrate: maxStreamingBitrate,
+        }),
+      );
+    }
+    for (const next of nextItems.slice(0, count)) {
+      if (next.Id) {
+        protectedKeys.push(
+          buildVideoStreamKey({
+            itemId: next.Id,
+            mediaSourceId: next.Id,
+            audioStreamIndex,
+            subtitleStreamIndex,
+            maxBitrate: maxStreamingBitrate,
+          }),
+        );
+      }
+    }
+    setProtectedStreamKeys(protectedKeys);
+  }, [
+    enabled,
+    count,
+    item?.Id,
+    nextItems,
+    audioStreamIndex,
+    subtitleStreamIndex,
+    maxStreamingBitrate,
+  ]);
 
   // The device profile is read from a ref inside the prefetch effect (same
   // mirror pattern as the progress reporters in the player routes): it must

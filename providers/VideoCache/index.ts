@@ -23,6 +23,7 @@ import {
   resetCompletionState,
   setupEventListeners,
 } from "./completion";
+
 import {
   cancelInFlightTasks,
   clearInFlight,
@@ -44,7 +45,11 @@ import type {
   VideoStreamSource,
 } from "./types";
 
-export { recordComplete, videoCacheEvents } from "./completion";
+export {
+  recordComplete,
+  setProtectedStreamKeys,
+  videoCacheEvents,
+} from "./completion";
 /** Re-exported so the cache API has a single import surface. */
 export { isCaching, markStart } from "./inflight";
 

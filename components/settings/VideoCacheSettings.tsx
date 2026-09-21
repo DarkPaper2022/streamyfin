@@ -19,11 +19,12 @@ export const VIDEO_LOOKAHEAD_COUNT_OPTIONS = [
 ] as const;
 
 export const VIDEO_CACHE_SIZE_OPTIONS = [
-  { label: "256 MB", value: 256 },
-  { label: "512 MB", value: 512 },
+  { label: "Auto (Keep 5 GB free)", value: 0 },
   { label: "1 GB", value: 1024 },
   { label: "2 GB", value: 2048 },
   { label: "4 GB", value: 4096 },
+  { label: "8 GB", value: 8192 },
+  { label: "16 GB", value: 16384 },
 ] as const;
 
 export const VideoCacheSettings: React.FC = () => {

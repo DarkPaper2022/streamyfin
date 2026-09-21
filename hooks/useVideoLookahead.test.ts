@@ -49,7 +49,16 @@ mock.module("expo-crypto", () => ({
   CryptoDigestAlgorithm: { SHA256: "SHA256" },
   digestStringAsync: async () => "sha256-digest",
 }));
+mock.module("react-native-device-info", () => ({
+  default: {
+    getFreeDiskStorage: async () => 20 * 1024 * 1024 * 1024,
+    getTotalDiskCapacity: async () => 128 * 1024 * 1024 * 1024,
+  },
+  getFreeDiskStorage: async () => 20 * 1024 * 1024 * 1024,
+  getTotalDiskCapacity: async () => 128 * 1024 * 1024 * 1024,
+}));
 // BitrateSelector is a React component module; only the BITRATES table matters.
+
 mock.module("@/components/BitrateSelector", () => ({
   BITRATES: [{ key: "Max", value: undefined }],
 }));

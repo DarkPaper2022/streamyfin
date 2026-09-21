@@ -7,7 +7,12 @@
 import { EventEmitter } from "eventemitter3";
 import { File } from "expo-file-system";
 import type { EventSubscription } from "expo-modules-core";
-import { VIDEO_CACHE_MAX_ENTRIES } from "@/constants/VideoCache";
+import DeviceInfo from "react-native-device-info";
+import {
+  VIDEO_CACHE_MAX_ENTRIES,
+  VIDEO_CACHE_MIN_FREE_DISK_BYTES,
+} from "@/constants/VideoCache";
+
 import type {
   DownloadCompleteEvent as BGDownloadCompleteEvent,
   DownloadErrorEvent as BGDownloadErrorEvent,
@@ -25,6 +30,12 @@ import type { VideoCacheCompleteEvent, VideoCacheErrorEvent } from "./types";
 const DEFAULT_MAX_CACHE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
 let configuredMaxSizeBytes = DEFAULT_MAX_CACHE_SIZE_BYTES;
+let activeProtectedKeys: ReadonlySet<string> = new Set();
+
+/** Update keys protected from eviction (e.g. current playing or upcoming prefetch). */
+export function setProtectedStreamKeys(keys: Iterable<string>): void {
+  activeProtectedKeys = new Set(keys);
+}
 
 // Event listener subscriptions (for cleanup)
 let _completeSubscription: EventSubscription | null = null;
@@ -145,15 +156,29 @@ export async function applySizeBudget(maxSizeMB: number): Promise<void> {
  */
 export function resetCompletionState(): void {
   configuredMaxSizeBytes = DEFAULT_MAX_CACHE_SIZE_BYTES;
+  activeProtectedKeys = new Set();
   listenersSetup = false;
 }
 
-/** Evict oldest entries (by `storedAt`) until both limits fit. */
+/** Evict oldest entries (by `storedAt`) until limits fit. */
 async function evictIfNeeded(): Promise<void> {
   const index = getCacheIndex();
+
+  let freeDiskBytes: number | undefined;
+  try {
+    if (typeof DeviceInfo?.getFreeDiskStorage === "function") {
+      freeDiskBytes = await DeviceInfo.getFreeDiskStorage();
+    }
+  } catch (_error) {
+    // If device storage query fails, fall back without free disk constraint
+  }
+
   const victims = selectEntriesToEvict(Object.values(index.entries), {
     maxEntries: VIDEO_CACHE_MAX_ENTRIES,
     maxSizeBytes: configuredMaxSizeBytes,
+    freeDiskBytes,
+    minFreeDiskBytes: VIDEO_CACHE_MIN_FREE_DISK_BYTES,
+    protectedKeys: activeProtectedKeys,
   });
 
   for (const victim of victims) {
