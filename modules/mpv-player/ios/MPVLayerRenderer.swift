@@ -585,7 +585,8 @@ final class MPVLayerRenderer {
         cacheEnabled: String? = nil,
         cacheSeconds: Int? = nil,
         demuxerMaxBytes: Int? = nil,
-        demuxerMaxBackBytes: Int? = nil
+        demuxerMaxBackBytes: Int? = nil,
+        demuxerMkvSubtitlePreroll: Bool? = nil
     ) {
         queue.async { [weak self] in
             guard let self else { return }
@@ -625,6 +626,9 @@ final class MPVLayerRenderer {
             }
             if let maxBackBytes = demuxerMaxBackBytes {
                 self.setProperty(name: "demuxer-max-back-bytes", value: "\(maxBackBytes)MiB")
+            }
+            if let preroll = demuxerMkvSubtitlePreroll {
+                self.setProperty(name: "demuxer-mkv-subtitle-preroll", value: preroll ? "yes" : "no")
             }
 
             // Set start position

@@ -255,7 +255,9 @@
         "cache_no": "已禁用",
         "buffer_duration": "缓冲时长",
         "max_cache_size": "最大缓存大小",
-        "max_backward_cache": "最大回退缓存"
+        "max_backward_cache": "最大回退缓存",
+        "demuxer_mkv_subtitle_preroll": "MKV 字幕预卷 (Preroll)",
+        "demuxer_mkv_subtitle_preroll_hint": "在 MKV 文件中向前预读字幕，避免在起播或跳转时丢失正在持续的字幕。"
       },
       "vo_driver": {
         "title": "视频输出",

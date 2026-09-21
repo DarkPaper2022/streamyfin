@@ -650,6 +650,9 @@ class MPVLayerRenderer(
         config.cacheSeconds?.let { mpv?.setOptionString("cache-secs", it.toString()) }
         config.demuxerMaxBytes?.let { mpv?.setOptionString("demuxer-max-bytes", "${it}MiB") }
         config.demuxerMaxBackBytes?.let { mpv?.setOptionString("demuxer-max-back-bytes", "${it}MiB") }
+        config.demuxerMkvSubtitlePreroll?.let {
+            mpv?.setOptionString("demuxer-mkv-subtitle-preroll", if (it) "yes" else "no")
+        }
 
         // Set start position. mpv's time parser requires '.' as the decimal
         // separator; use Locale.US so devices with other default locales

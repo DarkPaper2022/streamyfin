@@ -472,6 +472,7 @@ export type Settings = {
   mpvCacheSeconds?: number;
   mpvDemuxerMaxBytes?: number; // MB
   mpvDemuxerMaxBackBytes?: number; // MB
+  mpvDemuxerMkvSubtitlePreroll?: boolean;
   // MPV video output driver (Android only)
   mpvVoDriver?: MpvVoDriver;
   // Gesture controls
@@ -648,6 +649,7 @@ export const defaultValues: Settings = {
   mpvCacheSeconds: 10,
   mpvDemuxerMaxBytes: Platform.isTV && Platform.OS === "android" ? 75 : 150, // MB
   mpvDemuxerMaxBackBytes: Platform.isTV && Platform.OS === "android" ? 30 : 50, // MB
+  mpvDemuxerMkvSubtitlePreroll: true,
   // MPV video output driver defaults (Android only)
   mpvVoDriver: "gpu-next",
   // Gesture controls

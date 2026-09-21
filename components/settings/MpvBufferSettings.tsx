@@ -3,6 +3,7 @@ import type React from "react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
+import { SettingSwitch } from "@/components/common/SettingSwitch";
 import { Stepper } from "@/components/inputs/Stepper";
 import { PlatformDropdown } from "@/components/PlatformDropdown";
 import { type MpvCacheMode, useSettings } from "@/utils/atoms/settings";
@@ -93,6 +94,18 @@ export const MpvBufferSettings: React.FC = () => {
             updateSettings({ mpvDemuxerMaxBackBytes: value })
           }
           appendValue=' MB'
+        />
+      </ListItem>
+
+      <ListItem
+        title={t("home.settings.buffer.demuxer_mkv_subtitle_preroll")}
+        subtitle={t("home.settings.buffer.demuxer_mkv_subtitle_preroll_hint")}
+      >
+        <SettingSwitch
+          value={settings.mpvDemuxerMkvSubtitlePreroll ?? true}
+          onValueChange={(value) =>
+            updateSettings({ mpvDemuxerMkvSubtitlePreroll: value })
+          }
         />
       </ListItem>
     </ListGroup>

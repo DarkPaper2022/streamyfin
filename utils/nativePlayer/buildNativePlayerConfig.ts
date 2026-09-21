@@ -544,6 +544,8 @@ export async function buildNativePlayerConfig(params: {
         cacheSeconds: settings.mpvCacheSeconds,
         maxBytes: settings.mpvDemuxerMaxBytes,
         maxBackBytes: settings.mpvDemuxerMaxBackBytes,
+        demuxerMkvSubtitlePreroll:
+          settings.mpvDemuxerMkvSubtitlePreroll ?? true,
       },
       videoWidth: videoDimensions.width,
       videoHeight: videoDimensions.height,

@@ -76,6 +76,8 @@ export type VideoSource = {
     maxBytes?: number;
     /** Maximum backward cache size in MB (default: 50, range: 25-200) */
     maxBackBytes?: number;
+    /** Whether to preroll MKV subtitles before current playback position (default: true) */
+    demuxerMkvSubtitlePreroll?: boolean;
   };
   /** MPV video output driver (Android only) */
   voDriver?: "gpu-next" | "gpu";

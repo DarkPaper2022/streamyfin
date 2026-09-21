@@ -1008,6 +1008,8 @@ export default function DirectPlayerPage() {
         cacheSeconds: settings.mpvCacheSeconds,
         maxBytes: settings.mpvDemuxerMaxBytes,
         maxBackBytes: settings.mpvDemuxerMaxBackBytes,
+        demuxerMkvSubtitlePreroll:
+          settings.mpvDemuxerMkvSubtitlePreroll ?? true,
       },
       // Pass VO driver setting (Android only)
       voDriver: settings.mpvVoDriver,
@@ -1063,6 +1065,7 @@ export default function DirectPlayerPage() {
     settings.mpvCacheSeconds,
     settings.mpvDemuxerMaxBytes,
     settings.mpvDemuxerMaxBackBytes,
+    settings.mpvDemuxerMkvSubtitlePreroll,
     settings.mpvVoDriver,
   ]);
 

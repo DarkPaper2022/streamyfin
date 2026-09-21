@@ -23,6 +23,7 @@ data class VideoLoadConfig(
     val cacheSeconds: Int? = null,
     val demuxerMaxBytes: Int? = null,
     val demuxerMaxBackBytes: Int? = null,
+    val demuxerMkvSubtitlePreroll: Boolean? = null,
 )
 
 /**

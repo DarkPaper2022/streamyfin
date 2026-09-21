@@ -100,7 +100,8 @@ public class MpvPlayerModule: Module {
           cacheEnabled: cacheConfig?["enabled"] as? String,
           cacheSeconds: self.parseInteger(cacheConfig?["cacheSeconds"]),
           demuxerMaxBytes: self.parseInteger(cacheConfig?["maxBytes"]),
-          demuxerMaxBackBytes: self.parseInteger(cacheConfig?["maxBackBytes"])
+          demuxerMaxBackBytes: self.parseInteger(cacheConfig?["maxBackBytes"]),
+          demuxerMkvSubtitlePreroll: cacheConfig?["demuxerMkvSubtitlePreroll"] as? Bool
         )
 
         view.loadVideo(config: config)

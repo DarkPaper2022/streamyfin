@@ -255,7 +255,9 @@
         "cache_no": "Disabled",
         "buffer_duration": "Buffer duration",
         "max_cache_size": "Max cache size",
-        "max_backward_cache": "Max backward cache"
+        "max_backward_cache": "Max backward cache",
+        "demuxer_mkv_subtitle_preroll": "MKV subtitle preroll",
+        "demuxer_mkv_subtitle_preroll_hint": "Preroll subtitles before current playback position in MKV files to prevent missing subtitles when starting or seeking."
       },
       "vo_driver": {
         "title": "Video output",

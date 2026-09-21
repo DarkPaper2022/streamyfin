@@ -10,6 +10,7 @@ struct CacheConfigRecord: Record {
 	@Field var cacheSeconds: Int?
 	@Field var maxBytes: Int?
 	@Field var maxBackBytes: Int?
+	@Field var demuxerMkvSubtitlePreroll: Bool?
 }
 
 struct StreamConfigRecord: Record {
@@ -215,7 +216,8 @@ extension StreamConfigRecord {
 			cacheEnabled: cacheConfig?.enabled,
 			cacheSeconds: cacheConfig?.cacheSeconds,
 			demuxerMaxBytes: cacheConfig?.maxBytes,
-			demuxerMaxBackBytes: cacheConfig?.maxBackBytes
+			demuxerMaxBackBytes: cacheConfig?.maxBackBytes,
+			demuxerMkvSubtitlePreroll: cacheConfig?.demuxerMkvSubtitlePreroll
 		)
 	}
 }

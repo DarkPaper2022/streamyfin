@@ -22,6 +22,7 @@ struct VideoLoadConfig {
 	var cacheSeconds: Int?     // Seconds of video to buffer
 	var demuxerMaxBytes: Int?  // Max cache size in MB
 	var demuxerMaxBackBytes: Int?  // Max backward cache size in MB
+	var demuxerMkvSubtitlePreroll: Bool?
 
 	init(
 		url: URL,
@@ -35,7 +36,8 @@ struct VideoLoadConfig {
 		cacheEnabled: String? = nil,
 		cacheSeconds: Int? = nil,
 		demuxerMaxBytes: Int? = nil,
-		demuxerMaxBackBytes: Int? = nil
+		demuxerMaxBackBytes: Int? = nil,
+		demuxerMkvSubtitlePreroll: Bool? = nil
 	) {
 		self.url = url
 		self.headers = headers
@@ -49,6 +51,7 @@ struct VideoLoadConfig {
 		self.cacheSeconds = cacheSeconds
 		self.demuxerMaxBytes = demuxerMaxBytes
 		self.demuxerMaxBackBytes = demuxerMaxBackBytes
+		self.demuxerMkvSubtitlePreroll = demuxerMkvSubtitlePreroll
 	}
 }
 

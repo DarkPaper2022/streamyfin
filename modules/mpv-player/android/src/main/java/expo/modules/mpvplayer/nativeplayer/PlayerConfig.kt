@@ -9,6 +9,7 @@ class CacheConfigRecord : Record {
     @Field var cacheSeconds: Int? = null
     @Field var maxBytes: Int? = null
     @Field var maxBackBytes: Int? = null
+    @Field var demuxerMkvSubtitlePreroll: Boolean? = null
 }
 
 class StreamConfigRecord : Record {
@@ -38,7 +39,8 @@ class StreamConfigRecord : Record {
             cacheEnabled = cacheConfig?.enabled,
             cacheSeconds = cacheConfig?.cacheSeconds,
             demuxerMaxBytes = cacheConfig?.maxBytes,
-            demuxerMaxBackBytes = cacheConfig?.maxBackBytes
+            demuxerMaxBackBytes = cacheConfig?.maxBackBytes,
+            demuxerMkvSubtitlePreroll = cacheConfig?.demuxerMkvSubtitlePreroll
         )
     }
 }

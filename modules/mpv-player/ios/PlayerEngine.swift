@@ -239,7 +239,8 @@ final class MPVPlayerEngine: NSObject {
 			cacheEnabled: config.cacheEnabled,
 			cacheSeconds: config.cacheSeconds,
 			demuxerMaxBytes: config.demuxerMaxBytes,
-			demuxerMaxBackBytes: config.demuxerMaxBackBytes
+			demuxerMaxBackBytes: config.demuxerMaxBackBytes,
+			demuxerMkvSubtitlePreroll: config.demuxerMkvSubtitlePreroll
 		)
 
 		if config.autoplay {

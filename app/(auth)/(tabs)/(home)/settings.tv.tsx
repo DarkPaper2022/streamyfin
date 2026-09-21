@@ -1338,6 +1338,13 @@ export default function SettingsTV() {
             }}
             formatValue={(v) => `${v} MB`}
           />
+          <TVSettingsToggle
+            label={t("home.settings.buffer.demuxer_mkv_subtitle_preroll")}
+            value={settings.mpvDemuxerMkvSubtitlePreroll ?? true}
+            onToggle={(value) =>
+              updateSettings({ mpvDemuxerMkvSubtitlePreroll: value })
+            }
+          />
 
           {/* Video Cache Section — cross-episode look-ahead */}
           <TVSectionHeader
